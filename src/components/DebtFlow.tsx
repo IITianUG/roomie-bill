@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, DollarSign, Scale } from 'lucide-react';
+import { ArrowRight, Scale } from 'lucide-react';
 
 interface DebtFlowProps {
   debts: { [key: string]: number };
@@ -9,122 +8,76 @@ interface DebtFlowProps {
 }
 
 export const DebtFlow: React.FC<DebtFlowProps> = ({ debts, roommates }) => {
-  // Calculate simplified debt chain
-  const simplifyDebts = () => {
-    const debtors = Object.entries(debts)
-      .filter(([, amount]) => amount < 0)
-      .map(([person, amount]) => ({ person, amount: Math.abs(amount) }))
-      .sort((a, b) => b.amount - a.amount);
-    
-    const creditors = Object.entries(debts)
-      .filter(([, amount]) => amount > 0)
-      .map(([person, amount]) => ({ person, amount }))
-      .sort((a, b) => b.amount - a.amount);
+  const youOwe = Object.entries(debts)
+    .filter(([person, amount]) => person !== 'You' && amount < 0)
+    .map(([person, amount]) => ({ person, amount: Math.abs(amount) }));
+  
+  const othersOweYou = Object.entries(debts)
+    .filter(([person, amount]) => person !== 'You' && amount > 0)
+    .map(([person, amount]) => ({ person, amount }));
 
-    const transactions: { from: string; to: string; amount: number }[] = [];
-    
-    let i = 0, j = 0;
-    while (i < debtors.length && j < creditors.length) {
-      const debtor = debtors[i];
-      const creditor = creditors[j];
-      
-      const amount = Math.min(debtor.amount, creditor.amount);
-      
-      if (amount > 0.01) { // Avoid tiny amounts
-        transactions.push({
-          from: debtor.person,
-          to: creditor.person,
-          amount
-        });
-      }
-      
-      debtor.amount -= amount;
-      creditor.amount -= amount;
-      
-      if (debtor.amount < 0.01) i++;
-      if (creditor.amount < 0.01) j++;
-    }
-    
-    return transactions;
-  };
-
-  const transactions = simplifyDebts();
-  const totalOwed = Object.values(debts).filter(amount => amount < 0).reduce((sum, amount) => sum + Math.abs(amount), 0);
+  const yourBalance = debts['You'] || 0;
 
   return (
-    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg mb-6">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Scale className="w-5 h-5 text-blue-600" />
-          Debt Flow
+    <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg mb-4">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Scale className="w-4 h-4 text-blue-600" />
+          Balance Summary
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        {transactions.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="text-6xl mb-4">🎉</div>
-            <h3 className="text-lg font-semibold text-green-700 mb-2">Everyone's Even!</h3>
-            <p className="text-gray-600">No outstanding debts this month</p>
+      <CardContent className="pt-0">
+        {yourBalance === 0 ? (
+          <div className="text-center py-4">
+            <div className="text-4xl mb-2">🎉</div>
+            <p className="text-sm font-medium text-green-700">You're all even!</p>
           </div>
         ) : (
-          <>
-            <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-blue-700">Total to be settled:</span>
-                <span className="text-xl font-bold text-blue-800">
-                  ${totalOwed.toFixed(2)}
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="font-medium text-gray-900">Simplified Payment Flow:</h4>
-              {transactions.map((transaction, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-4 bg-gradient-to-r from-red-50 to-green-50 rounded-lg border"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-medium text-red-700">
-                          {transaction.from.charAt(0).toUpperCase()}
-                        </span>
+          <div className="space-y-3">
+            {/* You owe others */}
+            {youOwe.length > 0 && (
+              <div>
+                <h4 className="text-xs font-medium text-red-700 mb-2">You owe:</h4>
+                <div className="space-y-1">
+                  {youOwe.map(({ person, amount }) => (
+                    <div key={person} className="flex items-center justify-between p-2 bg-red-50 rounded text-xs">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-medium text-red-700">
+                            {person.charAt(0)}
+                          </span>
+                        </div>
+                        <span className="text-red-800 font-medium">{person}</span>
                       </div>
-                      <span className="font-medium text-gray-900">{transaction.from}</span>
+                      <span className="font-bold text-red-700">${amount.toFixed(2)}</span>
                     </div>
-                    
-                    <div className="flex items-center gap-2 text-gray-500">
-                      <span className="text-sm">owes</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-medium text-green-700">
-                          {transaction.to.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      <span className="font-medium text-gray-900">{transaction.to}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border">
-                    <DollarSign className="w-4 h-4 text-green-600" />
-                    <span className="font-bold text-gray-900">
-                      {transaction.amount.toFixed(2)}
-                    </span>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
 
-            <div className="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
-              <p className="text-sm text-amber-800">
-                💡 <strong>Tip:</strong> This simplified flow minimizes the number of transactions needed to settle all debts.
-              </p>
-            </div>
-          </>
+            {/* Others owe you */}
+            {othersOweYou.length > 0 && (
+              <div>
+                <h4 className="text-xs font-medium text-green-700 mb-2">Others owe you:</h4>
+                <div className="space-y-1">
+                  {othersOweYou.map(({ person, amount }) => (
+                    <div key={person} className="flex items-center justify-between p-2 bg-green-50 rounded text-xs">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-medium text-green-700">
+                            {person.charAt(0)}
+                          </span>
+                        </div>
+                        <span className="text-green-800 font-medium">{person}</span>
+                      </div>
+                      <span className="font-bold text-green-700">${amount.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>
