@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -30,8 +29,16 @@ export const WhatsAppNotification: React.FC<WhatsAppNotificationProps> = ({
   };
 
   const currentMonth = 'December 2024';
-  const totalOwed = 125.50;
-  const totalOwedToYou = 89.25;
+  
+  // Mock detailed debt breakdown
+  const debtDetails = [
+    { name: 'Alex', amount: 45.25, type: 'owe' as const },
+    { name: 'Sam', amount: 80.25, type: 'owe' as const },
+    { name: 'Jordan', amount: 89.25, type: 'owes_you' as const }
+  ];
+
+  const totalOwed = debtDetails.filter(d => d.type === 'owe').reduce((sum, d) => sum + d.amount, 0);
+  const totalOwedToYou = debtDetails.filter(d => d.type === 'owes_you').reduce((sum, d) => sum + d.amount, 0);
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -56,12 +63,46 @@ export const WhatsAppNotification: React.FC<WhatsAppNotificationProps> = ({
               </CardContent>
             </Card>
 
-            <div className="space-y-2">
-              <h4 className="font-medium text-gray-900">Summary to be sent:</h4>
-              <div className="text-sm text-gray-600 space-y-1">
-                <p>• Total you owe: <span className="font-semibold text-red-600">${totalOwed.toFixed(2)}</span></p>
-                <p>• Total owed to you: <span className="font-semibold text-green-600">${totalOwedToYou.toFixed(2)}</span></p>
-                <p>• Net balance: <span className="font-semibold">${(totalOwedToYou - totalOwed).toFixed(2)}</span></p>
+            <div className="space-y-3">
+              <h4 className="font-medium text-gray-900">Details to be sent:</h4>
+              
+              {/* You owe section */}
+              {debtDetails.filter(d => d.type === 'owe').length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-red-700 mb-2">You owe:</p>
+                  <div className="space-y-1">
+                    {debtDetails.filter(d => d.type === 'owe').map(debt => (
+                      <div key={debt.name} className="flex justify-between items-center text-sm bg-red-50 p-2 rounded">
+                        <span className="text-red-800">{debt.name}</span>
+                        <span className="font-semibold text-red-600">${debt.amount.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Others owe you section */}
+              {debtDetails.filter(d => d.type === 'owes_you').length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-green-700 mb-2">Others owe you:</p>
+                  <div className="space-y-1">
+                    {debtDetails.filter(d => d.type === 'owes_you').map(debt => (
+                      <div key={debt.name} className="flex justify-between items-center text-sm bg-green-50 p-2 rounded">
+                        <span className="text-green-800">{debt.name}</span>
+                        <span className="font-semibold text-green-600">${debt.amount.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-2 border-t">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Net balance:</span>
+                  <span className={`font-semibold ${(totalOwedToYou - totalOwed) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    ${(totalOwedToYou - totalOwed).toFixed(2)}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -99,9 +140,26 @@ export const WhatsAppNotification: React.FC<WhatsAppNotificationProps> = ({
                       <p className="font-medium">💰 {currentMonth} Expense Summary</p>
                       <p>Hey everyone! Time to settle up for this month:</p>
                       <div className="mt-2 space-y-1 text-xs">
-                        <p>📊 <strong>My Summary:</strong></p>
-                        <p>• I owe: ${totalOwed.toFixed(2)}</p>
-                        <p>• Owed to me: ${totalOwedToYou.toFixed(2)}</p>
+                        <p>📊 <strong>Breakdown:</strong></p>
+                        
+                        {debtDetails.filter(d => d.type === 'owe').length > 0 && (
+                          <div>
+                            <p>• I owe:</p>
+                            {debtDetails.filter(d => d.type === 'owe').map(debt => (
+                              <p key={debt.name} className="ml-2">- {debt.name}: ${debt.amount.toFixed(2)}</p>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {debtDetails.filter(d => d.type === 'owes_you').length > 0 && (
+                          <div>
+                            <p>• Owed to me:</p>
+                            {debtDetails.filter(d => d.type === 'owes_you').map(debt => (
+                              <p key={debt.name} className="ml-2">- {debt.name}: ${debt.amount.toFixed(2)}</p>
+                            ))}
+                          </div>
+                        )}
+                        
                         <p>• Net: ${(totalOwedToYou - totalOwed).toFixed(2)}</p>
                       </div>
                       <p className="mt-2">Let's settle up! Check the app for details 📱</p>
