@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
-import { Users, Plus, Settings, MessageCircle } from 'lucide-react';
+import { Users, ChevronDown, ChevronUp, Settings, MessageCircle } from 'lucide-react';
 import { MonthCard } from '@/components/MonthCard';
 import { GroupManagement } from '@/components/GroupManagement';
 import { WhatsAppNotification } from '@/components/WhatsAppNotification';
@@ -23,9 +24,10 @@ const Index = () => {
   const navigate = useNavigate();
   const [showGroupManagement, setShowGroupManagement] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
+  const [showPreviousMonths, setShowPreviousMonths] = useState(false);
 
   // Mock data for demonstration
-  const monthsData: MonthData[] = [{
+  const recentMonthsData: MonthData[] = [{
     id: '2024-12',
     month: 'December',
     year: 2024,
@@ -53,14 +55,47 @@ const Index = () => {
     totalExpenses: 398.20,
     participantCount: 3
   }];
+
+  const previousMonthsData: MonthData[] = [{
+    id: '2024-09',
+    month: 'September',
+    year: 2024,
+    youOwe: 0,
+    othersOweYou: 0,
+    isSettled: true,
+    totalExpenses: 287.15,
+    participantCount: 3
+  }, {
+    id: '2024-08',
+    month: 'August',
+    year: 2024,
+    youOwe: 0,
+    othersOweYou: 0,
+    isSettled: true,
+    totalExpenses: 412.80,
+    participantCount: 3
+  }, {
+    id: '2024-07',
+    month: 'July',
+    year: 2024,
+    youOwe: 0,
+    othersOweYou: 0,
+    isSettled: true,
+    totalExpenses: 365.45,
+    participantCount: 3
+  }];
+
   const handleMonthClick = (monthId: string) => {
     navigate(`/month/${monthId}`);
   };
+  
   const handleSettleUp = (monthId: string) => {
     console.log(`Settling up for month: ${monthId}`);
     // Settlement logic would go here
   };
+  
   const currentRoommates = ['You', 'Alex', 'Sam', 'Jordan'];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-3">
       <div className="max-w-md mx-auto">
@@ -97,7 +132,7 @@ const Index = () => {
                 <div>
                   <p className="text-xs text-gray-600">Total You Owe</p>
                   <p className="text-lg font-bold text-red-600">
-                    ${monthsData.reduce((sum, month) => sum + month.youOwe, 0).toFixed(2)}
+                    ${recentMonthsData.reduce((sum, month) => sum + month.youOwe, 0).toFixed(2)}
                   </p>
                 </div>
                 <div className="text-red-500">
@@ -116,7 +151,7 @@ const Index = () => {
                   <div>
                     <p className="text-xs text-gray-600">Others Owe You</p>
                     <p className="text-lg font-bold text-green-600">
-                      ${monthsData.reduce((sum, month) => sum + month.othersOweYou, 0).toFixed(2)}
+                      ${recentMonthsData.reduce((sum, month) => sum + month.othersOweYou, 0).toFixed(2)}
                     </p>
                   </div>
                   <div className="text-green-500">
@@ -146,8 +181,8 @@ const Index = () => {
 
         {/* Monthly Cards */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-900">Monthly Expenses</h2>
-          {monthsData.map(month => (
+          <h2 className="text-xl font-semibold text-gray-900">Recent Months</h2>
+          {recentMonthsData.map(month => (
             <MonthCard 
               key={month.id} 
               monthData={month} 
@@ -157,16 +192,41 @@ const Index = () => {
           ))}
         </div>
 
-        {/* Add New Month Button */}
-        <div className="mt-6 text-center">
+        {/* Previous Months Toggle */}
+        <div className="mt-6">
           <Button 
-            onClick={() => navigate('/month/new')} 
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+            onClick={() => setShowPreviousMonths(!showPreviousMonths)}
+            variant="outline"
+            className="w-full bg-white/80 backdrop-blur-sm border-gray-200 hover:bg-gray-50 text-gray-700"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Add New Month
+            {showPreviousMonths ? (
+              <>
+                <ChevronUp className="w-4 h-4 mr-2" />
+                Hide Previous Months
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-4 h-4 mr-2" />
+                View Previous Months
+              </>
+            )}
           </Button>
         </div>
+
+        {/* Previous Months Cards */}
+        {showPreviousMonths && (
+          <div className="space-y-4 mt-4">
+            <h3 className="text-lg font-medium text-gray-800">Previous Months</h3>
+            {previousMonthsData.map(month => (
+              <MonthCard 
+                key={month.id} 
+                monthData={month} 
+                onMonthClick={handleMonthClick} 
+                onSettleUp={handleSettleUp} 
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Group Management Modal */}
