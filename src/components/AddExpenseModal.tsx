@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -43,7 +42,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 }) => {
   const [description, setDescription] = useState(expense?.description || '');
   const [amount, setAmount] = useState(expense?.amount?.toString() || '');
-  const [category, setCategory] = useState(expense?.category || 'food');
+  const [category, setCategory] = useState<'food' | 'rent' | 'utilities' | 'entertainment' | 'other'>(expense?.category || 'food');
   const [paidBy, setPaidBy] = useState(expense?.paidBy || roommates[0]);
   const [participants, setParticipants] = useState<string[]>(expense?.participants || roommates);
   const [splitType, setSplitType] = useState<'equal' | 'custom'>('equal');
@@ -106,30 +105,31 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-sm mx-4 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-lg">
             {expense ? 'Edit Expense' : 'Add New Expense'}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Basic Information */}
           <Card>
-            <CardContent className="p-4 space-y-4">
+            <CardContent className="p-3 space-y-3">
               <div>
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description" className="text-sm">Description</Label>
                 <Input
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="e.g., Grocery shopping, Electricity bill"
+                  placeholder="e.g., Grocery shopping"
+                  className="mt-1"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-3">
                 <div>
-                  <Label htmlFor="amount">Amount ($)</Label>
+                  <Label htmlFor="amount" className="text-sm">Amount ($)</Label>
                   <Input
                     id="amount"
                     type="number"
@@ -137,13 +137,14 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="0.00"
+                    className="mt-1"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="category">Category</Label>
-                  <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger>
+                  <Label htmlFor="category" className="text-sm">Category</Label>
+                  <Select value={category} onValueChange={(value) => setCategory(value as typeof category)}>
+                    <SelectTrigger className="mt-1">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -161,9 +162,9 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
               </div>
 
               <div>
-                <Label htmlFor="paidBy">Paid by</Label>
+                <Label htmlFor="paidBy" className="text-sm">Paid by</Label>
                 <Select value={paidBy} onValueChange={setPaidBy}>
-                  <SelectTrigger>
+                  <SelectTrigger className="mt-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -180,9 +181,9 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 
           {/* Participants */}
           <Card>
-            <CardContent className="p-4">
-              <Label className="text-base font-medium">Who should split this expense?</Label>
-              <div className="grid grid-cols-2 gap-2 mt-3">
+            <CardContent className="p-3">
+              <Label className="text-sm font-medium">Who should split this expense?</Label>
+              <div className="grid grid-cols-1 gap-2 mt-2">
                 {roommates.map(person => (
                   <div key={person} className="flex items-center space-x-2">
                     <Checkbox
@@ -190,7 +191,7 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
                       checked={participants.includes(person)}
                       onCheckedChange={() => handleParticipantToggle(person)}
                     />
-                    <Label htmlFor={person}>{person}</Label>
+                    <Label htmlFor={person} className="text-sm">{person}</Label>
                   </div>
                 ))}
               </div>
@@ -199,52 +200,52 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
 
           {/* Split Configuration */}
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-3">
               <Tabs value={splitType} onValueChange={(value) => setSplitType(value as 'equal' | 'custom')}>
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-2 text-xs">
                   <TabsTrigger value="equal">Equal Split</TabsTrigger>
                   <TabsTrigger value="custom">Custom Split</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="equal" className="mt-4">
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <p className="text-sm text-blue-700 mb-2">
-                      Amount will be split equally among {participants.length} participant(s)
+                <TabsContent value="equal" className="mt-3">
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <p className="text-xs text-blue-700 mb-1">
+                      Split equally among {participants.length} participant(s)
                     </p>
                     {participants.length > 0 && amount && (
-                      <p className="text-lg font-semibold text-blue-800">
+                      <p className="text-sm font-semibold text-blue-800">
                         ${(parseFloat(amount) / participants.length).toFixed(2)} per person
                       </p>
                     )}
                   </div>
                 </TabsContent>
 
-                <TabsContent value="custom" className="mt-4">
-                  <div className="space-y-3">
-                    <p className="text-sm text-gray-600">
+                <TabsContent value="custom" className="mt-3">
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-600">
                       Set custom amounts for each participant:
                     </p>
                     {participants.map(person => (
-                      <div key={person} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <Label htmlFor={`split-${person}`}>{person}</Label>
-                        <div className="flex items-center gap-2">
-                          <span>$</span>
+                      <div key={person} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <Label htmlFor={`split-${person}`} className="text-sm">{person}</Label>
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm">$</span>
                           <Input
                             id={`split-${person}`}
                             type="number"
                             step="0.01"
                             value={customSplits[person] || ''}
                             onChange={(e) => handleCustomSplitChange(person, e.target.value)}
-                            className="w-20"
+                            className="w-16 h-8 text-sm"
                           />
                         </div>
                       </div>
                     ))}
                     
-                    <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <div className="p-2 bg-yellow-50 rounded-lg border border-yellow-200">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-yellow-800">Total splits:</span>
-                        <span className={`font-semibold ${
+                        <span className="text-xs text-yellow-800">Total splits:</span>
+                        <span className={`text-sm font-semibold ${
                           Math.abs(getTotalSplit() - parseFloat(amount || '0')) < 0.01 
                             ? 'text-green-600' 
                             : 'text-red-600'
@@ -265,16 +266,16 @@ export const AddExpenseModal: React.FC<AddExpenseModalProps> = ({
           </Card>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
+        <div className="flex flex-col gap-2 pt-3 border-t">
           <Button 
             onClick={handleSave} 
             disabled={!isValid}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
           >
             {expense ? 'Update Expense' : 'Add Expense'}
+          </Button>
+          <Button variant="outline" onClick={onClose} className="w-full">
+            Cancel
           </Button>
         </div>
       </DialogContent>

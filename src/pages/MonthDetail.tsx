@@ -26,11 +26,22 @@ const MonthDetail = () => {
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
-  // Mock data
+  // Helper function to get month data from monthId
+  const getMonthData = (id: string) => {
+    const monthMap: { [key: string]: { month: string; year: number } } = {
+      '2024-12': { month: 'December', year: 2024 },
+      '2024-11': { month: 'November', year: 2024 },
+      '2024-10': { month: 'October', year: 2024 },
+      '2024-09': { month: 'September', year: 2024 },
+      '2024-08': { month: 'August', year: 2024 }
+    };
+    
+    return monthMap[id || '2024-12'] || { month: 'December', year: 2024 };
+  };
+
   const monthData = {
     id: monthId,
-    month: 'December',
-    year: 2024,
+    ...getMonthData(monthId || '2024-12'),
     isSettled: monthId === '2024-11' || monthId === '2024-10'
   };
 
@@ -99,8 +110,8 @@ const MonthDetail = () => {
   if (monthData.isSettled) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-4 mb-6">
+        <div className="max-w-md mx-auto">
+          <div className="flex items-center gap-3 mb-6">
             <Button
               variant="ghost"
               onClick={() => navigate('/')}
@@ -108,12 +119,12 @@ const MonthDetail = () => {
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+            <div className="flex-1">
+              <h1 className="text-xl font-bold text-gray-900">
                 {monthData.month} {monthData.year}
               </h1>
-              <div className="flex items-center gap-2 mt-2">
-                <Badge className="bg-green-100 text-green-800 border-green-200">
+              <div className="flex items-center gap-2 mt-1">
+                <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
                   ✅ All Settled Up!
                 </Badge>
                 <span className="animate-bounce">🎉</span>
@@ -121,16 +132,16 @@ const MonthDetail = () => {
             </div>
           </div>
 
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg mb-6">
-            <CardContent className="p-6">
-              <p className="text-lg text-gray-700 text-center">
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg mb-4">
+            <CardContent className="p-4">
+              <p className="text-sm text-gray-700 text-center">
                 This month has been fully settled! All expenses have been paid and balanced.
               </p>
             </CardContent>
           </Card>
 
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">Transaction History</h2>
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold text-gray-900">Transaction History</h2>
             {expenses.map((expense) => (
               <ExpenseCard
                 key={expense.id}
@@ -148,10 +159,10 @@ const MonthDetail = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 flex-1">
             <Button
               variant="ghost"
               onClick={() => navigate('/')}
@@ -159,20 +170,20 @@ const MonthDetail = () => {
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+            <div className="flex-1">
+              <h1 className="text-xl font-bold text-gray-900">
                 {monthData.month} {monthData.year}
               </h1>
-              <p className="text-gray-600">Manage expenses for this month</p>
+              <p className="text-xs text-gray-600">Manage expenses for this month</p>
             </div>
           </div>
           
           <Button
             onClick={() => setShowAddExpense(true)}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+            size="sm"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full"
           >
-            <Plus className="w-5 h-5 mr-2" />
-            Add Expense
+            <Plus className="w-4 h-4" />
           </Button>
         </div>
 
@@ -180,21 +191,22 @@ const MonthDetail = () => {
         <DebtFlow debts={debts} roommates={roommates} />
 
         {/* Expenses List */}
-        <div className="space-y-6">
-          <h2 className="text-2xl font-semibold text-gray-900">Expenses</h2>
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-gray-900">Expenses</h2>
           
           {expenses.length === 0 ? (
             <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-              <CardContent className="p-12 text-center">
-                <div className="text-gray-400 mb-4">
-                  <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+              <CardContent className="p-6 text-center">
+                <div className="text-gray-400 mb-3">
+                  <svg className="w-12 h-12 mx-auto" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4zM18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No expenses yet</h3>
-                <p className="text-gray-600 mb-4">Start by adding your first expense for this month</p>
+                <h3 className="text-base font-medium text-gray-900 mb-2">No expenses yet</h3>
+                <p className="text-sm text-gray-600 mb-3">Start by adding your first expense for this month</p>
                 <Button
                   onClick={() => setShowAddExpense(true)}
+                  size="sm"
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
                 >
                   Add First Expense
@@ -202,7 +214,7 @@ const MonthDetail = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {expenses.map((expense) => (
                 <ExpenseCard
                   key={expense.id}
@@ -218,8 +230,8 @@ const MonthDetail = () => {
 
         {/* Settle Up Button */}
         {expenses.length > 0 && (
-          <div className="mt-8 text-center">
-            <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200">
+          <div className="mt-6 text-center">
+            <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-full">
               Settle Up This Month
             </Button>
           </div>
